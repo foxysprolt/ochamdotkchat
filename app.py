@@ -70,7 +70,7 @@ st.caption("Suporte N2, Engenharia e Diagnósticos de Campo em Tempo Real")
 # Barra Lateral para Inserir a API Key
 with st.sidebar:
     st.header("🔑 Configuração")
-    api_key = st.text_input("Cole sua Gemini API Key:", type="password")
+    api_key = st.text_input("AIzaSyDjOFgtMqho7c36EBVQZX6G5jfM2gTvXLU:", type="password")
     st.markdown("[Criar API Key Gratuita no Google AI Studio](https://aistudio.google.com/)")
     
     if st.button("Limpar Histórico de Conversa"):
