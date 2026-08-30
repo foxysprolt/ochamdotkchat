@@ -5,22 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Foxysprolt">
     <link rel="stylesheet" href="styles.css">
-    <title>O Chamado</title>
+    <title>O Chamado — Suporte Power2Go</title>
 </head>
 <body>
 
 <main class="chat-container">
 
     <header class="chat-header">
-        <h1>O <span>Chamado</span></h1>
-        <p>Manda o problema do carregador que eu resolvo!</p>
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <div class="brand-text">
+                <h1>O <span>Chamado</span></h1>
+                <p>Suporte técnico Power2Go</p>
+            </div>
+        </div>
+        <span class="status-dot" title="Sistema online"></span>
     </header>
 
     <section class="chat-box" id="chat"></section>
 
     <div class="input-area">
-        <textarea class="caixa-texto" placeholder="Escreve o problema do carregado..." rows="2"></textarea>
-        <button class="botao-ajuda">Enviar</button>
+        <textarea class="caixa-texto" placeholder="Descreva o problema do carregador..." rows="2"></textarea>
+        <button class="botao-ajuda" aria-label="Enviar mensagem">Enviar</button>
     </div>
 
 </main>

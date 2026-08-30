@@ -1,5 +1,5 @@
-/* Importando uma fonte mais moderna e limpa (Inter) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+/* Tipografia: JetBrains Mono para dados técnicos, Inter para leitura */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');
 
 * {
     margin: 0;
@@ -8,47 +8,132 @@
     font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
 }
 
+:root {
+    --navy-950: #0A0F1E;
+    --navy-900: #0F172A;
+    --navy-800: #1E293B;
+    --slate-200: #E2E8F0;
+    --slate-50:  #F8FAFC;
+    --blue-600:  #0056D2;
+    --cyan-400:  #38BDF8;
+    --amber-500: #F59E0B;
+}
+
 body {
-    background-image: url(./assets/BACK.jpg);
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    background:
+        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08), transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(0, 86, 210, 0.10), transparent 50%),
+        var(--navy-950);
+    background-attachment: fixed;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Circuito sutil no fundo — remete a eletrônica sem ser infantil */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(56, 189, 248, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.035) 1px, transparent 1px);
+    background-size: 42px 42px;
+    pointer-events: none;
+    z-index: 0;
 }
 
 .chat-container {
+    position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 500px;
     height: 90vh;
     display: flex;
     flex-direction: column;
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra moderna estilo widget */
+    background: var(--slate-50);
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(56, 189, 248, 0.08);
     overflow: hidden;
 }
 
 .chat-header {
-    background: #0F172A; /* Azul escuro corporativo/tecnológico */
-    color: rgba(255, 255, 255, 0.7);
-    padding: 20px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    text-align: center;
-    border-bottom: 3px solid #0056D2; /* Detalhe moderno na base do header */
+    background: var(--navy-900);
+    color: rgba(255, 255, 255, 0.75);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--blue-600);
 }
 
-.chat-header span {
-    color: #38BDF8; /* Cor de destaque para o nome da IA (Ochamado) */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Marca geométrica — um raio estilizado em formato de losango, não um clipart */
+.brand-mark {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--blue-600), var(--cyan-400));
+    position: relative;
+}
+
+.brand-mark::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 10px;
+    height: 16px;
+    background: var(--navy-950);
+    clip-path: polygon(60% 0%, 0% 60%, 45% 60%, 40% 100%, 100% 40%, 55% 40%);
+}
+
+.brand-text h1 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.brand-text h1 span {
+    color: var(--cyan-400);
+}
+
+.brand-text p {
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.03em;
+    color: rgba(255, 255, 255, 0.45);
+    margin-top: 2px;
+}
+
+.status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #22C55E;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+    flex-shrink: 0;
 }
 
 .chat-box {
     flex: 1;
     padding: 20px;
-    background: #F8FAFC; /* Fundo do chat super limpo (quase branco) */
+    background: var(--slate-50);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 16px; /* Espaço um pouco maior entre as mensagens para respirar */
+    gap: 16px;
 }
 
 .msg {
@@ -57,29 +142,29 @@ body {
     border-radius: 12px;
     font-size: 14px;
     line-height: 1.5;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Sombreado leve nas mensagens */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .user {
     align-self: flex-end;
-    background: #0056D2; /* Azul elétrico da mensagem do usuário */
+    background: var(--blue-600);
     color: #FFFFFF;
-    border-bottom-right-radius: 4px; /* Efeito de balão de fala moderno */
+    border-bottom-right-radius: 4px;
 }
 
 .bot {
     align-self: flex-start;
-    background: #FFFFFF; 
-    color: #1E293B; /* Texto escuro, mas não 100% preto */
-    border: 1px solid #E2E8F0;
-    border-bottom-left-radius: 4px; /* Efeito de balão de fala moderno */
+    background: #FFFFFF;
+    color: var(--navy-800);
+    border: 1px solid var(--slate-200);
+    border-bottom-left-radius: 4px;
 }
 
 .input-area {
     display: flex;
     padding: 16px;
     background: #FFFFFF;
-    border-top: 1px solid #E2E8F0; /* Separador sutil */
+    border-top: 1px solid var(--slate-200);
     gap: 12px;
 }
 
@@ -87,21 +172,21 @@ body {
     flex: 1;
     border-radius: 8px;
     border: 1px solid #CBD5E1;
-    background: #F8FAFC;
+    background: var(--slate-50);
     padding: 12px 16px;
     resize: none;
     outline: none;
     font-size: 14px;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .caixa-texto:focus {
-    border-color: #0056D2; /* Borda acende quando o usuário digita */
+    border-color: var(--blue-600);
     background: #FFFFFF;
 }
 
 .botao-ajuda {
-    background: #0F172A; /* Botão combinando com o header */
+    background: var(--navy-900);
     color: #FFFFFF;
     border: none;
     padding: 12px 24px;
@@ -112,5 +197,24 @@ body {
 }
 
 .botao-ajuda:hover {
-    background: #1E293B; /* Efeito hover mais suave */
+    background: var(--navy-800);
+}
+
+.botao-ajuda:focus-visible,
+.caixa-texto:focus-visible {
+    outline: 2px solid var(--cyan-400);
+    outline-offset: 2px;
+}
+
+/* Responsivo — celular ocupa a tela toda, sem cantos arredondados forçados */
+@media (max-width: 560px) {
+    .chat-container {
+        max-width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    body::before {
+        background-size: 32px 32px;
+    }
 }
