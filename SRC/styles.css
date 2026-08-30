@@ -1,0 +1,116 @@
+/* Importando uma fonte mais moderna e limpa (Inter) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background-image: url(./assets/BACK.jpg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.chat-container {
+    width: 100%;
+    max-width: 500px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra moderna estilo widget */
+    overflow: hidden;
+}
+
+.chat-header {
+    background: #0F172A; /* Azul escuro corporativo/tecnológico */
+    color: rgba(255, 255, 255, 0.7);
+    padding: 20px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-align: center;
+    border-bottom: 3px solid #0056D2; /* Detalhe moderno na base do header */
+}
+
+.chat-header span {
+    color: #38BDF8; /* Cor de destaque para o nome da IA (Ochamado) */
+}
+
+.chat-box {
+    flex: 1;
+    padding: 20px;
+    background: #F8FAFC; /* Fundo do chat super limpo (quase branco) */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Espaço um pouco maior entre as mensagens para respirar */
+}
+
+.msg {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Sombreado leve nas mensagens */
+}
+
+.user {
+    align-self: flex-end;
+    background: #0056D2; /* Azul elétrico da mensagem do usuário */
+    color: #FFFFFF;
+    border-bottom-right-radius: 4px; /* Efeito de balão de fala moderno */
+}
+
+.bot {
+    align-self: flex-start;
+    background: #FFFFFF; 
+    color: #1E293B; /* Texto escuro, mas não 100% preto */
+    border: 1px solid #E2E8F0;
+    border-bottom-left-radius: 4px; /* Efeito de balão de fala moderno */
+}
+
+.input-area {
+    display: flex;
+    padding: 16px;
+    background: #FFFFFF;
+    border-top: 1px solid #E2E8F0; /* Separador sutil */
+    gap: 12px;
+}
+
+.caixa-texto {
+    flex: 1;
+    border-radius: 8px;
+    border: 1px solid #CBD5E1;
+    background: #F8FAFC;
+    padding: 12px 16px;
+    resize: none;
+    outline: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.caixa-texto:focus {
+    border-color: #0056D2; /* Borda acende quando o usuário digita */
+    background: #FFFFFF;
+}
+
+.botao-ajuda {
+    background: #0F172A; /* Botão combinando com o header */
+    color: #FFFFFF;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+.botao-ajuda:hover {
+    background: #1E293B; /* Efeito hover mais suave */
+}
