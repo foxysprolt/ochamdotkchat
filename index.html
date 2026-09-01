@@ -1,36 +1,107 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="author" content="Foxysprolt">
-    <link rel="stylesheet" href="styles.css">
-    <title>O Chamado — Suporte Power2Go</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Distrato</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<main class="chat-container">
+  <div class="page">
 
-    <header class="chat-header">
-        <div class="brand">
-            <span class="brand-mark" aria-hidden="true"></span>
-            <div class="brand-text">
-                <h1>O <span>Chamado</span></h1>
-                <p>Suporte técnico Power2Go</p>
-            </div>
-        </div>
-        <span class="status-dot" title="Sistema online"></span>
+    <header class="page__header">
+      <span class="page__kicker">Cláusula 11.2 — quebra de fidelidade</span>
+      <h1>Calculadora de Distrato</h1>
+      <p class="page__lead">Preencha os dados do contrato para apurar o valor devido pelo cancelamento antes do fim do período de fidelidade.</p>
     </header>
 
-    <section class="chat-box" id="chat"></section>
+    <main class="layout">
 
-    <div class="input-area">
-        <textarea class="caixa-texto" placeholder="Descreva o problema do carregador..." rows="2"></textarea>
-        <button class="botao-ajuda" aria-label="Enviar mensagem">Enviar</button>
-    </div>
+      <section class="card" aria-labelledby="form-title">
+        <h2 id="form-title">Dados do contrato</h2>
 
-</main>
+        <form id="form-distrato" novalidate>
 
-<script type="module" src="script.js"></script>
+          <div class="field-row">
+            <div class="field">
+              <label for="nome">Nome do titular</label>
+              <input type="text" id="nome" placeholder="Opcional">
+            </div>
+            <div class="field">
+              <label for="contrato">Nº do contrato</label>
+              <input type="text" id="contrato" placeholder="Opcional">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="dataInstalacao">Data da instalação *</label>
+              <input type="date" id="dataInstalacao" required>
+            </div>
+            <div class="field">
+              <label for="fidelidadeMeses">Fidelidade (meses) *</label>
+              <input type="number" id="fidelidadeMeses" min="1" step="1" value="36" required>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="dataCancelamento">Data da solicitação de cancelamento *</label>
+              <input type="date" id="dataCancelamento" required>
+            </div>
+            <div class="field">
+              <label for="mensalidade">Valor da mensalidade atual (R$) *</label>
+              <input type="number" id="mensalidade" min="0" step="0.01" placeholder="0,00" required>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field field--narrow">
+              <label for="percentualMulta">Multa da cláusula 11.2 (%) *</label>
+              <input type="number" id="percentualMulta" min="0" max="100" step="0.01" value="50" required>
+            </div>
+          </div>
+
+          <p class="field-error" id="form-error" role="alert" hidden></p>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn--primary">Calcular</button>
+            <button type="reset" class="btn btn--ghost">Limpar</button>
+          </div>
+
+        </form>
+      </section>
+
+      <section class="card card--result" id="result-card" aria-labelledby="result-title" hidden>
+        <h2 id="result-title">Apuração</h2>
+
+        <div id="result-empty" class="result-note" hidden></div>
+
+        <div id="result-body">
+          <table class="breakdown" id="breakdown-table">
+            <tbody id="breakdown-body"></tbody>
+          </table>
+
+          <div class="total-row">
+            <span>Valor da quebra contratual</span>
+            <strong id="total-valor">R$ 0,00</strong>
+          </div>
+
+          <button type="button" class="btn btn--primary btn--pdf" id="btn-pdf">Gerar PDF</button>
+        </div>
+
+      </section>
+
+    </main>
+
+    <footer class="page__footer">
+      <p>Ferramenta de apoio ao cálculo. Confira sempre os dados contratuais antes de enviar o valor ao cliente.</p>
+    </footer>
+
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
