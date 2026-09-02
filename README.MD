@@ -1,154 +1,119 @@
-# ⚡ PowerBot — Sistema de Suporte Técnico Inteligente | Power2Go
+# 🚀 Power2Go - Support Automation Engine
 
-![Project Status](https://img.shields.io/badge/status-production-brightgreen)
-![Python](https://img.shields.io/badge/python-3.11-blue)
-![AI Model](https://img.shields.io/badge/LLM-Gemini%203.5%20Flash--Lite-orange)
-![Frontend](https://img.shields.io/badge/hosting-GitHub%20Pages-black)
-![GCP](https://img.shields.io/badge/backend-Google%20Cloud%20Run-google)
-
-O **PowerBot** é o assistente virtual de inteligência artificial da **Power2Go**, desenvolvido para automatizar o atendimento inicial, realizar diagnósticos técnicos de primeiro nível e gerenciar a abertura de chamados de suporte para carregadores de veículos elétricos (EVs).
-
-O sistema opera de forma agêntica em 3 etapas: realiza a triagem de dados do cliente, guia o usuário em testes físicos no equipamento (reset de disjuntor DR e leitura de LEDs) e, caso o problema persista, coleta de forma obrigatória os dados de contato completos para disparar um ticket padronizado via e-mail.
+Este ecossistema de automação foi projetado para transformar a gestão de suporte da **Power2Go** no Auvo Helpdesk. A arquitetura é dividida em duas ferramentas inteligentes e complementares que operam de forma autônoma para triar, responder e reduzir drasticamente a quantidade de tickets abertos na fila humana.
 
 ---
 
-## 📁 Estrutura do Repositório
-
-O repositório é organizado de forma modular, separando a interface pública (servida via GitHub Pages) da API serverless no Google Cloud:
+## 🏗️ Arquitetura do Sistema
 
 ```text
-ochamadotkchat/
-├── .gitignore             # Arquivo de proteção contra vazamento de credenciais (.env)
-├── README.md              # Documentação principal do projeto
-├── index.html             # Estrutura do Chat de Atendimento
-├── script.js              # Lógica do front-end e requisições HTTP (Fetch API)
-├── styles.css             # Estilização responsiva no padrão visual da marca
-│
-└── backend/                 # API Serverless (Google Cloud Run)
-    ├── main.py              # Lógica da rota, integração Gemini e envio de e-mail (SMTP)
-    ├── promptia.py          # Prompt do Sistema (Engenharia de Prompt do PowerBot)
-    └── requirements.txt     # Dependências da aplicação Python
+               +----------------------------------+
+               |        CLIENTE (WhatsApp)        |
+               +----------------------------------+
+                                |
+                                v
+               +----------------------------------+
+               |           OChamadoBot            |  (Front-facing Chatbot)
+               |  • Atendimento Inicial           |
+               |  • Triagem & Coleta de Dados     |
+               |  • Abertura de Ticket via API    |
+               +----------------------------------+
+                                |
+                                v
+                   +--------------------------+
+                   |  AUVO HELPDESK API (v2)  |
+                   +--------------------------+
+                                ^
+                                |
+               +----------------------------------+
+               |            OSChamados            |  (Backoffice Automation Engine)
+               |  • Varredura Periódica (Crawler) |
+               |  • Triagem & Roteamento de Fila  |
+               |  • Deflexão de Chamados Simples  |
+               |  • Gestão de Inatividade (Loop)  |
+               +----------------------------------+
+
 ```
 
 ---
 
-## 🚀 Funcionalidades Principais
+## 🤖 1. OChamado (`ochamado`) — Agente de Interface
 
-* **Triagem Inicial Obrigatória:** Solicita Nome Completo e Localização (condomínio, shopping ou estação) antes de passar instruções técnicas.
-* **Diagnóstico de LEDs e Restabelecimento de Conexão:** Instrui o procedimento de reset na caixinha STECK (disjuntor DR) e avalia o comportamento do LED Amarelo (Comunicação) e Verde (Sistema).
-* **Validação Rígida de Dados de Contato:** O assistente exige Telefone com DDD e E-mail/CPF antes de gerar o chamado técnico, impedindo tickets incompletos.
-* **Automação de Envio por E-mail:** Intercepta a tag interna `[DISPARAR_EMAIL]` para formatar e disparar o e-mail via Gmail SMTP para `suporte@power2go.com.br` automaticamente.
-* **Segurança e Isolação de Credenciais:** Arquitetura sem credenciais no front-end, protegendo as chaves da API do Gemini e do SMTP através de variáveis de ambiente no servidor.
+**Objetivo:** Converter o atendimento inicial via WhatsApp em um chamado perfeitamente preenchido e estruturado na API do Auvo.
 
----
+* **Triagem e Coleta:** Interage diretamente com o cliente para coletar *Nome*, *Local/Estação*, *Telefone* e *E-mail/CPF*.
+* **Diagnóstico Inicial:** Aplica procedimentos rápidos de resolução (ex: Reset do DR, Teste de Chave no Veículo, Orientações de Carga).
+* **Gatilho de Ticket:** Assim que valida os dados, gera o modelo estruturado de ticket com a tag `[CRIAR_TICKET_AUVO]` e insere os campos customizados (`customFields`), enviando via `POST /v2/tickets`.
 
-## 💻 Tecnologias Utilizadas
 
-### Front-end
-* **Linguagens:** HTML5, CSS3, JavaScript (ES6+)
-* **Hospedagem:** GitHub Pages
-* **Comunicação:** Fetch API Assíncrona
-
-### Back-end & Inteligência Artificial
-* **Linguagem:** Python 3.11
-* **Framework:** Google Functions Framework / Flask
-* **Modelo LLM:** Google Gemini 3.5 Flash-Lite (Google GenAI SDK)
-* **Infraestrutura Cloud:** Google Cloud Run (deploy via `--source`, usando Buildpacks + Functions Framework)
-* **Serviço de Mensageria:** SMTP (Gmail App Password)
 
 ---
 
-## 🔐 Variáveis de Ambiente
+## ⚙️ 2. OSChamados (`oschamados`) — Motor de Gestão da Fila
 
-As credenciais do sistema são injetadas no ambiente de execução do Google Cloud Run e nunca sobem para o GitHub.
+**Objetivo:** Roda em segundo plano (background worker) varrendo a fila do Auvo para categorizar tickets, responder dúvidas simples e encerrar chamados inativos.
 
-| Variável | Descrição |
-| --- | --- |
-| `GEMINI_API_KEY` | Chave de autenticação da API Google Gemini |
-| `GMAIL_USER` | Conta do Gmail utilizada para o envio automático dos tickets |
-| `GMAIL_APP_PASS` | Senha de aplicativo de 16 dígitos gerada no Google Conta |
+### 🔄 Fluxo de Execução (Loop de Automação)
 
----
+1. **Varredura da Fila (`GET /v2/tickets`):**
+* Puxa periodicamente a lista de todos os tickets que estão em aberto.
 
-## 🛠️ Execução do Projeto Localmente
 
-### Pré-requisitos
-* Python 3.11+ instalado
-* Chave de API do Google Gemini
 
-### 1. Clonar o repositório
-```bash
-git clone https://github.com/foxysprolt/web.git
-cd web/OChamado
-```
 
-### 2. Configurar o Back-end
-Acesse a pasta `backend` e instale as dependências:
-```bash
-cd backend
-pip install -r requirements.txt
-```
+2. **Análise de Interações (`GET /v2/tickets/{id}?searchInteractions=true`):**
+* A IA examina cada ticket para identificar se já houve manifestação recente ou nota interna da equipe.
 
-Defina as variáveis de ambiente no seu terminal:
 
-* **Windows (PowerShell):**
-```powershell
-$env:GEMINI_API_KEY="SUA_CHAVE_GEMINI"
-$env:GMAIL_USER="seu_email@dominio.com"
-$env:GMAIL_APP_PASS="sua_senha_app_16_digitos"
-```
 
-* **Linux / macOS (Bash):**
-```bash
-export GEMINI_API_KEY="SUA_CHAVE_GEMINI"
-export GMAIL_USER="seu_email@dominio.com"
-export GMAIL_APP_PASS="sua_senha_app_16_digitos"
-```
 
-Inicie o servidor local na porta `8080`:
-```bash
-functions-framework --target=chat_ochamado --port=8080 --debug
-```
+3. **Triagem e Classificação:**
+* Caso não tenha sido triado, a IA define o **Tipo de Solicitação** (`typeId`) e a **Equipe Destino** (`teamId`) via `PATCH /v2/tickets/{id}`.
 
-### 3. Configurar o Front-end
-Para testar localmente, abra o arquivo `OChamado/index.html` usando a extensão **Live Server** no VS Code.
+
+
+
+4. **Deflexão de Atendimento (Chamados Simples):**
+* Para dúvidas corriqueiras, a IA envia uma resposta padrão/orientação direta ao cliente e atualiza o status para **Resolvido/Concluído**.
+
+
+5. **Ciclo de Cobrança e Inatividade (Loop de 6 Horas):**
+* Quando a IA precisa de mais informações do cliente, altera o status do ticket para **`Aguardando Cliente (IA)`**.
+* A cada 6 horas (limite de até 4 tentativas / 24 horas), o sistema faz uma nova checagem.
+* Se o cliente responder, o ticket é retornado para **Em Atendimento**.
+* Se o cliente permanecer em silêncio após as 4 tentativas, o sistema envia uma mensagem final de aviso e altera o status para **Encerrado por Inatividade**.
+
+
 
 ---
 
-## 📦 Deploy para Produção
+## 🛠️ Tecnologias Utilizadas
 
-### Deploy do Back-end (Google Cloud Run)
+* **Linguagem:** Python 3.10+
+* **Framework Serverless:** Google Cloud Functions (`functions_framework`)
+* **Modelo de IA:** Google Gemini API (`google-genai`)
+* **Plataforma de Helpdesk:** Auvo API v2 (Helpdesk, Tickets, Status e Custom Fields)
 
-O backend usa o **Functions Framework** internamente (`@functions_framework.http`), então o deploy precisa incluir um `Procfile` na pasta `backend/` apontando para o entry-point correto:
 
-```text
-web: functions-framework --target=chat_ochamado --port=$PORT
-```
-
-Com o `Procfile` e o `functions-framework` listado em `requirements.txt`, navegue até a pasta `backend` e execute:
-
-```bash
-cd backend
-gcloud run deploy chat-ochamado \
-  --source=. \
-  --region=southamerica-east1 \
-  --allow-unauthenticated
-```
-
-> ⚠️ As variáveis de ambiente (`GEMINI_API_KEY`, `GMAIL_USER`, `GMAIL_APP_PASS`) precisam estar configuradas no serviço Cloud Run — elas não são herdadas automaticamente entre revisões dependendo de como o serviço foi criado originalmente. Confira com:
-> ```bash
-> gcloud run services describe chat-ochamado --region=southamerica-east1 --format="value(spec.template.spec.containers[0].env)"
-> ```
-
-### Deploy do Front-end (GitHub Pages)
-1. Acesse a aba **Settings** do seu repositório no GitHub.
-2. Navegue até a seção **Pages** (no menu lateral esquerdo).
-3. Em *Source*, selecione a opção **Deploy from a branch**.
-4. Defina a branch como `main` e selecione a pasta `/OChamado` (ou `/root`, conforme sua estrutura).
-5. Clique em **Save**. O site estará disponível publicamente em poucos minutos.
+* **Gerenciamento de Ambiente:** `python-dotenv`
 
 ---
 
-## 📝 Licença e Uso Interno
+## 📌 Status de Transição Personalizados (Auvo)
 
-Este projeto foi desenvolvido para uso restrito e operação de suporte técnico dos pontos de recarga da **Power2Go**. Todos os direitos reservados à marca.
+Para o funcionamento correto do `oschamados`, foram mapeados os seguintes status de fluxo no painel do Auvo:
+
+* `Novo / Em Atendimento` (ID: 99950) — Aguardando triagem da IA ou ação da equipe.
+
+
+* `Aguardando Cliente (IA)` — Status dinâmico onde a IA monitora o loop de 6h.
+* `Encerrado por Inatividade` — Fechamento automático por ausência de resposta do cliente.
+* `Resolvido / Concluído` — Encerrado com sucesso por deflexão da IA.
+
+## 🔮 Evolução Futura (Roadmap): IA Local / On-Premise
+
+Como alternativa para redução de custos em escala e conformidade total com privacidade de dados (LGPD):
+
+* **Suporte a LLMs Locais:** Implementação de conectores para modelos Open-Source (ex: Llama 3 / Mistral) rodando via **Ollama** ou **vLLM**.
+* **Zero Cost per Ticket:** Eliminação do custo de API por token na varredura contínua de milhares de tickets do `oschamados`.
+* **Processamento Privado:** Garantia de que dados sensíveis de clientes e condomínios permaneçam restritos ao ambiente interno da Power2Go.

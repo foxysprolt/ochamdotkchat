@@ -1,13 +1,16 @@
 import os
 import json
 import urllib.request
+from dotenv import load_dotenv
+
+load_dotenv()
 
 API_KEY = os.getenv("AUVO_API_KEY", "SUA_API_KEY_AQUI")
 API_TOKEN = os.getenv("AUVO_API_TOKEN", "SEU_API_TOKEN_AQUI")
-TICKET_ID = "8086"  # Coloque aqui o ID do ticket que deseja consultar
+TICKET_ID = os.getenv("TICKET_ID", "8086")
 
 def consultar_ticket_resumido():
-    print(f"=== CONSULTANDO TICKET #{TICKET_ID} (RESUMO) ===")
+    print(f"=== CONSULTANDO TICKET #{TICKET_ID} (COM NOTAS E INTERAÇÕES) ===")
     
     # 1. Autenticação
     url_login = "https://api.auvo.com.br/v2/login"
@@ -26,8 +29,11 @@ def consultar_ticket_resumido():
         print(f"❌ Erro no Login: {err}")
         return
 
-    # 2. Requisição GET para o Ticket
-    url_ticket = f"https://api.auvo.com.br/v2/tickets/{TICKET_ID}"
+    # 2. Requisição GET para o Ticket com flags de interações e modificações ativadas
+    url_ticket = (
+        f"https://api.auvo.com.br/v2/tickets/{TICKET_ID}"
+        f"?searchInteractions=true&searchModifications=true&searchCustomFields=true"
+    )
     headers = {"Authorization": f"Bearer {token}"}
 
     try:
@@ -35,28 +41,41 @@ def consultar_ticket_resumido():
         with urllib.request.urlopen(req, timeout=10) as resp:
             dados_brutos = json.loads(resp.read().decode("utf-8")).get("result", {})
             
+            if not dados_brutos:
+                print("❌ Ticket não encontrado.")
+                return
+
             # --- TRATAMENTO DOS CUSTOM FIELDS ---
-            # Transforma o array gigante de customFields num dicionário limpo {"Nome do Campo": "Valor"}
             campos_personalizados = {}
             for item in dados_brutos.get("customFields", []):
                 meta = item.get("customFieldTicket", {})
                 titulo = meta.get("title")
                 id_campo = meta.get("id")
                 valor = item.get("value") or item.get("valueDescription") or ""
-                
-                # Guarda o nome, ID interno e o valor cadastrado
                 campos_personalizados[f"{titulo} (ID: {id_campo})"] = valor
 
-            # --- EXTRAÇÃO DO HISTÓRICO DE ALTERAÇÕES DE TIPO/EQUIPE ---
-            alteracoes_importantes = []
+            # --- EXTRAÇÃO DE NOTAS INTERNAS E INTERAÇÕES ---
+            notas_e_interacoes = []
+            
+            # Puxa o histórico de mensagens / notas criadas
+            for interacao in dados_brutos.get("interactions", []):
+                notas_e_interacoes.append({
+                    "data": interacao.get("date") or interacao.get("creationDate"),
+                    "autor": interacao.get("userName") or interacao.get("userCreatedName") or "Sistema",
+                    "tipo": interacao.get("typeDescription", "Anotação/Resposta"),
+                    "conteudo": interacao.get("message") or interacao.get("description") or ""
+                })
+
+            # --- EXTRAÇÃO DO HISTÓRICO DE ALTERAÇÕES ---
+            historico_alteracoes = []
             for alt in dados_brutos.get("alterations", []):
-                alteracoes_importantes.append({
+                historico_alteracoes.append({
                     "tipo": alt.get("alterationType"),
                     "id_destino": alt.get("to"),
                     "descricao_destino": alt.get("toDescription")
                 })
 
-            # --- ESTRUTURAÇÃO DO JSON BONITINHO E RESUMIDO ---
+            # --- ESTRUTURAÇÃO DO JSON FINAL ---
             ticket_resumido = {
                 "ticket_id": dados_brutos.get("id"),
                 "titulo": dados_brutos.get("title"),
@@ -70,7 +89,8 @@ def consultar_ticket_resumido():
                     "userResponsableId": dados_brutos.get("userResponsableId")
                 },
                 "campos_customizados_preenchidos": campos_personalizados,
-                "historico_ids_alterados": alteracoes_importantes
+                "anotacoes_e_interacoes": notas_e_interacoes,
+                "historico_ids_alterados": historico_alteracoes
             }
 
             print("\n✅ DADOS ESSENCIAIS DO TICKET:")
